@@ -1,0 +1,67 @@
+---
+- name: set up hostname records
+  lineinfile:
+    dest: /etc/hosts
+    state: present
+    line: "{{ hostvars[item]['ansible_' ~ common.default_interface].ipv4.address }}    {{ hostvars[item].ansible_hostname }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - "{{ groups['all'] }}"
+
+- include: base_packages.yml
+
+- name: stop firewalld
+  service:
+    name: firewalld
+    state: stopped
+
+- name: disable selinux
+  selinux:
+    state: disabled
+
+- name: create /root/.ssh directory
+  file:
+    path: /root/.ssh
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: generate ssh keys on all nodes
+  shell: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+  args:
+    creates: /root/.ssh/id_rsa
+
+- name: fetch all servers id_rsa.pub file content 
+  shell: cat ~/.ssh/id_rsa.pub
+  register: ssh_keys
+
+- name: disable host key checking
+  lineinfile:
+    dest: /etc/ssh/ssh_config
+    line: "StrictHostKeyChecking no"
+
+- name: make sure all ssh keys are in authorized_keys
+  authorized_key: user=root key="{{ item[0] }}"
+  delegate_to: "{{ item[1] }}"
+  with_nested:
+        - "{{ ssh_keys.stdout }}"
+        - "{{groups['all']}}"
+
+- name: enable ip forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: ensure that exist /var/lib/docker directory
+  file:
+    path: /var/lib/docker
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
