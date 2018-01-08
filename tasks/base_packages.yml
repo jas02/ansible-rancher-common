@@ -7,7 +7,15 @@
     - python
     - python-setuptools
 
+- name: download get-pip installer
+  get_url:
+    url: "https://bootstrap.pypa.io/get-pip.py"
+    dest: "/usr/local/bin/get-pip.py"
+    owner: root
+    group: root
+    mode: 0755
+
 - name: install pip
-  easy_install:
-    name: pip
-    state: present
+  command: /usr/local/bin/get-pip.py
+  args:
+    creates: /usr/bin/pip
