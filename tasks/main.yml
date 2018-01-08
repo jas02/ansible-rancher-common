@@ -16,6 +16,7 @@
   service:
     name: firewalld
     state: stopped
+  when: ansible_distribution == 'Red Hat Enterprise Linux'
 
 - name: disable selinux
   selinux:
