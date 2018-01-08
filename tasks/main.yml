@@ -8,7 +8,7 @@
     group: root
     mode: 0644
   with_items:
-    - "{{ groups['all'] }}"
+    - "{{ groups['rancher'] }}"
 
 - include: base_packages.yml
 
@@ -48,7 +48,7 @@
   delegate_to: "{{ item[1] }}"
   with_nested:
         - "{{ ssh_keys.stdout }}"
-        - "{{groups['all']}}"
+        - "{{groups['rancher']}}"
 
 - name: enable ip forwarding
   sysctl:
