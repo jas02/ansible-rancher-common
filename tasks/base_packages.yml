@@ -19,3 +19,8 @@
   command: /usr/local/bin/get-pip.py
   args:
     creates: /usr/bin/pip
+
+- name: install docker_container python package dependency
+  pip:
+    name: docker-py
+    state: present
