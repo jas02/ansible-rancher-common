@@ -10,7 +10,7 @@
   with_items:
     - "{{ groups['rancher'] }}"
 
-- include: base_packages.yml
+- import_tasks: base_packages.yml
 
 - name: stop firewalld
   service:
